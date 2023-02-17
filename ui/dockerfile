@@ -1,0 +1,10 @@
+FROM node:lts-alpine
+
+WORKDIR /ui
+COPY package.json vite.config.ts index.html src public /ui
+
+RUN apk add git
+RUN npm i
+
+EXPOSE 8080
+CMD npm run docker-start

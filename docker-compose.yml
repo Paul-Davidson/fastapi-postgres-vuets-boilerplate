@@ -1,0 +1,54 @@
+version: '3.1'
+services:
+
+  database:
+    image: "postgres:14-alpine"
+    container_name: database
+    volumes:
+      - data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - fullstack_network
+    restart: always
+    volumes:
+      - ./db/.:/docker-entrypoint-initdb.d/.
+    env_file: 
+      - .env
+
+  app:
+    build: ./app
+    container_name: app
+    volumes:
+      - ./app/:/app
+    environment:
+      - DB_SERVER=database
+    ports:
+      - 8000:8000
+    networks:
+      - fullstack_network
+    depends_on:
+      - database
+    env_file: 
+      - .env
+
+  ui:
+    build: ./ui
+    container_name: ui
+    volumes:
+      - ./ui/src:/ui/src
+      - ./ui/public:/ui/public
+      - ./ui/index.html:/ui/index.html
+      - ./ui/package.json:/ui/package.json
+      - ./ui/vite.config.ts:/ui/vite.config.ts
+    ports:
+      - 8080:8080
+    depends_on:
+      - app
+
+volumes:
+  data:
+
+networks:
+  fullstack_network:
+    driver: bridge
