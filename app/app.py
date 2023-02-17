@@ -4,7 +4,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import hello_world
+from routers import hello_world, postgres
 
 app = FastAPI(
     title="fastapi-postgres-vue-boilerplate",
@@ -26,6 +26,7 @@ app.add_middleware(
 
 # Place routers here
 app.include_router(hello_world.router)
+app.include_router(postgres.router)
 
 
 async def init_connection(connection):
@@ -40,7 +41,12 @@ async def startup():
     # Handle pool creation
     # https://github.com/jordic/fastapi_asyncpg/blob/master/fastapi_asyncpg/__init__.py
     pool = await asyncpg.create_pool(
-        dsn=f"postgres://{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}@{os.environ['DB_SERVER']}:5432/{os.environ['POSTGRES_DB']}",
+        dsn="postgres://{0}:{1}@{2}:5432/{3}".format(
+            os.environ['POSTGRES_USER'],
+            os.environ['POSTGRES_PASSWORD'],
+            os.environ['DB_SERVER'],
+            os.environ['POSTGRES_DB']
+        ),
         init=init_connection,
     )
     app.state.pool = pool
